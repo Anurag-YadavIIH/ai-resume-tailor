@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Pattern;
 
 /**
  * Renders the tailored resume JSON into a self-contained LaTeX document.
@@ -81,7 +82,7 @@ public class LatexService {
             for (JsonNode p : projects) {
                 sb.append("\\textbf{").append(esc(p.path("name").asText("")));
                 String link = p.path("link").asText("");
-                if (link.startsWith("http")) {
+                if (isMeaningfulUrl(link)) {
                     sb.append("} \\href{").append(link).append("}{\\small [GitHub]}");
                 } else {
                     sb.append("}");
@@ -198,7 +199,7 @@ public class LatexService {
             for (JsonNode link : links) {
                 String url = link.path("url").asText("");
                 String label = link.path("label").asText(url);
-                if (!url.isBlank()) {
+                if (isMeaningfulUrl(url)) {
                     parts.add("\\href{" + url + "}{" + esc(label) + "}");
                 }
             }
@@ -208,6 +209,18 @@ public class LatexService {
 
     private void add(List<String> list, String value) {
         if (value != null && !value.isBlank()) list.add(esc(value));
+    }
+
+    // Matches a bare domain root with no real path, e.g. "https://github.com/",
+    // "github.com", "http://linkedin.com" — these are placeholder guesses an LLM
+    // makes when it sees a label like "GitHub" but no actual link in the source
+    // text. Never render them; a real profile/project link always has a path.
+    private static final Pattern BARE_DOMAIN = Pattern.compile(
+            "^(https?://)?(www\\.)?[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}/?$");
+
+    private boolean isMeaningfulUrl(String url) {
+        if (url == null || url.isBlank()) return false;
+        return !BARE_DOMAIN.matcher(url.trim()).matches();
     }
 
     private String bullets(JsonNode arr) {

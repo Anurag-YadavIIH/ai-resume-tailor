@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Download, FileCode2, RefreshCw } from "lucide-react";
+import { Download, ExternalLink, FileCode2, RefreshCw } from "lucide-react";
 import { documentApi } from "../api";
 
 interface Props {
@@ -27,6 +27,15 @@ export default function PreviewPane({
           {rendering ? "Rendering PDF…" : "PDF preview"}
         </span>
         <div className="flex gap-2">
+          <a
+            className="btn-ghost px-3 py-1.5 text-xs"
+            href={src}
+            target="_blank"
+            rel="noreferrer"
+            title="Open in a new tab — link hover previews only work outside this embedded preview"
+          >
+            <ExternalLink className="h-3.5 w-3.5" /> Open in new tab
+          </a>
           <a
             className="btn-ghost px-3 py-1.5 text-xs"
             href={documentApi.latexUrl(tailoredId)}
