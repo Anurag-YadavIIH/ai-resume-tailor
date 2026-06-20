@@ -22,6 +22,15 @@ RUN apt-get update \
     && rm /tmp/tectonic.tar.gz \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
+# Warm up tectonic's bundle cache at build time. Without this, the FIRST PDF
+# compile in any fresh/restarted container fetches tectonic's font/format bundle
+# over the network — slow, and on memory-constrained hosts (e.g. Render's free
+# tier) can crash the process. Baking it into the image makes every container
+# start with a warm cache and no runtime network dependency for compiling.
+COPY warmup.tex /tmp/warmup.tex
+RUN tectonic /tmp/warmup.tex --outdir /tmp \
+    && rm -f /tmp/warmup.tex /tmp/warmup.pdf
+
 COPY --from=build /app/target/*.jar app.jar
 
 ENV LATEX_ENGINE=tectonic
