@@ -1,0 +1,31 @@
+services:
+  - type: web
+    name: resume-tailor-backend
+    runtime: docker
+    plan: free
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    healthCheckPath: /actuator/health
+    envVars:
+      # Neon (or any) Postgres connection — fill in via the Render dashboard.
+      - key: DB_URL
+        sync: false
+      - key: DB_USER
+        sync: false
+      - key: DB_PASSWORD
+        sync: false
+      # OpenAI-compatible LLM provider. Defaults below point at Groq's free tier;
+      # swap OPENAI_BASE_URL/OPENAI_API_KEY back to OpenAI's if you'd rather pay for quality.
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: OPENAI_BASE_URL
+        value: https://api.groq.com/openai/v1
+      - key: OPENAI_MODEL
+        value: llama-3.3-70b-versatile
+      - key: OPENAI_MODEL_FAST
+        value: llama-3.1-8b-instant
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      # Your deployed frontend origin(s), comma-separated, no trailing slash.
+      - key: CORS_ORIGINS
+        sync: false

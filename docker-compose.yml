@@ -1,0 +1,53 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: resume-tailor-db
+    environment:
+      POSTGRES_DB: resume_tailor
+      POSTGRES_USER: resume
+      POSTGRES_PASSWORD: resume
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U resume -d resume_tailor"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build: ./backend
+    container_name: resume-tailor-backend
+    # Pin reliable public DNS - Docker Desktop's internal resolver intermittently
+    # fails to resolve api.openai.com (seen as ClosedChannelException/SSL handshake
+    # timeouts), causing the OpenAI calls to hang or fail.
+    dns:
+      - 8.8.8.8
+      - 1.1.1.1
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DB_URL: jdbc:postgresql://db:5432/resume_tailor
+      DB_USER: resume
+      DB_PASSWORD: resume
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      OPENAI_MODEL: ${OPENAI_MODEL:-gpt-4o}
+      OPENAI_MODEL_FAST: ${OPENAI_MODEL_FAST:-gpt-4o-mini}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      CORS_ORIGINS: http://localhost:3000,http://localhost:5173
+      LATEX_ENGINE: tectonic
+    ports:
+      - "8080:8080"
+
+  frontend:
+    build: ./frontend
+    container_name: resume-tailor-frontend
+    depends_on:
+      - backend
+    ports:
+      - "3000:80"
+
+volumes:
+  pgdata:

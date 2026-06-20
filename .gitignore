@@ -1,0 +1,25 @@
+# Secrets
+.env
+.env.local
+*.env.local
+
+# Java / Maven
+backend/target/
+*.class
+
+# Node / Vite
+frontend/node_modules/
+frontend/dist/
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# OS
+.DS_Store
+Thumbs.db
+
+# LaTeX scratch
+/tmp/resume-latex/
+.claude/

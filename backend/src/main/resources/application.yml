@@ -1,0 +1,57 @@
+server:
+  port: 8080
+  servlet:
+    context-path: /
+
+spring:
+  application:
+    name: resume-tailor
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/resume_tailor}
+    username: ${DB_USER:resume}
+    password: ${DB_PASSWORD:resume}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        format_sql: true
+    open-in-view: false
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+    locations: classpath:db/migration
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+
+# Application-specific settings
+app:
+  openai:
+    api-key: ${OPENAI_API_KEY:}
+    base-url: ${OPENAI_BASE_URL:https://api.openai.com/v1}
+    model: ${OPENAI_MODEL:gpt-4o}
+    fast-model: ${OPENAI_MODEL_FAST:gpt-4o-mini}
+    timeout-seconds: ${OPENAI_TIMEOUT:240}
+  google:
+    client-id: ${GOOGLE_CLIENT_ID:}
+  cors:
+    allowed-origins: ${CORS_ORIGINS:http://localhost:5173,http://localhost:3000}
+  latex:
+    # Path to the LaTeX engine. tectonic is self-contained and recommended.
+    # Falls back to pdflatex if tectonic is not present.
+    engine: ${LATEX_ENGINE:tectonic}
+    work-dir: ${LATEX_WORKDIR:/tmp/resume-latex}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+
+logging:
+  level:
+    com.resumetailor: INFO
+    org.springframework.web: INFO
